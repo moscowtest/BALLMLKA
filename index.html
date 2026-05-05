@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Neon Bonus | Система премий отделов</title>
+    <title>Bonus | Система премий отделов</title>
     <style>
         * {
             margin: 0;
@@ -12,529 +12,510 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(circle at 20% 30%, #0a0a2a, #03030f);
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #0b0f1c;
             color: #e2e8f0;
-            padding: 2rem 1rem;
             min-height: 100vh;
+            padding: 2rem 1rem;
         }
 
-        /* Контейнер */
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
 
-        /* Заголовок */
-        .header {
+        /* карточки отделов (выбор) */
+        .dept-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .dept-card {
+            background: #111827;
+            border-radius: 1.5rem;
+            padding: 1rem 2rem;
+            width: 200px;
             text-align: center;
-            margin-bottom: 3rem;
+            cursor: pointer;
+            border: 1px solid #2d3a5e;
+            transition: 0.2s;
         }
-
-        .header h1 {
-            font-size: 2.8rem;
-            background: linear-gradient(135deg, #a5f3fc, #c084fc, #f472b6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-            letter-spacing: -0.5px;
+        .dept-card:hover {
+            background: #1e293b;
+            border-color: #3b82f6;
+            transform: translateY(-3px);
         }
-
-        .header p {
-            color: #94a3b8;
-            margin-top: 0.5rem;
-            font-size: 1.1rem;
+        /* модальное окно */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
-
-        /* Сетка отделов */
-        .departments-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        /* Карточка отдела */
-        .card {
-            background: rgba(15, 25, 45, 0.65);
-            backdrop-filter: blur(12px);
+        .modal-card {
+            background: #0f172a;
             border-radius: 2rem;
-            border: 1px solid rgba(0, 255, 255, 0.2);
+            padding: 2rem;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #334155;
+        }
+        input, button {
+            width: 100%;
+            padding: 0.7rem;
+            margin: 0.5rem 0;
+            border-radius: 2rem;
+            border: none;
+            background: #1e293b;
+            color: white;
+            font-size: 1rem;
+        }
+        button {
+            background: #2563eb;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .dashboard {
+            background: #0f172a;
+            border-radius: 2rem;
             padding: 1.5rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 1rem;
         }
-
-        .card:hover {
-            border-color: #0ff;
-            box-shadow: 0 0 18px rgba(0, 255, 255, 0.2);
-            transform: translateY(-4px);
+        .dashboard h2 {
+            border-left: 4px solid #3b82f6;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
         }
-
-        .card h2 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 1.25rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px dashed rgba(0, 255, 255, 0.4);
-            display: inline-block;
+        .settings-panel {
+            background: #111827;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
         }
-
-        /* Таблица сотрудников */
+        .setting-row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .setting-row input {
+            width: auto;
+            flex: 2;
+            margin: 0;
+        }
+        .setting-row span {
+            flex: 3;
+        }
         .employees-table {
             width: 100%;
             border-collapse: collapse;
             margin: 1rem 0;
-            font-size: 0.9rem;
         }
-
-        .employees-table th,
-        .employees-table td {
-            padding: 8px 6px;
+        .employees-table th, .employees-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #1e293b;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .employees-table th {
-            color: #7dd3fc;
-            font-weight: 600;
-        }
-
-        .delete-btn {
-            background: rgba(255, 70, 70, 0.2);
-            border: none;
-            color: #ffb3b3;
-            cursor: pointer;
-            font-size: 1.1rem;
-            border-radius: 20px;
-            width: 28px;
-            height: 28px;
-            transition: all 0.2s;
-        }
-
-        .delete-btn:hover {
-            background: #f43f5e;
-            color: white;
-            transform: scale(1.05);
-        }
-
-        /* Формы */
-        .form-group {
-            margin-bottom: 0.8rem;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.7rem;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid #334155;
-            border-radius: 1rem;
-            color: white;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #0ff;
-            box-shadow: 0 0 8px #0ff;
-        }
-
-        /* Баллы (inline) */
-        .scores-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-            margin: 1rem 0;
-            align-items: flex-end;
-        }
-        .score-field {
-            flex: 1;
-            min-width: 100px;
-        }
-        .score-field label {
-            font-size: 0.7rem;
-            color: #94a3b8;
-            display: block;
-        }
-
-        /* Кнопки */
-        .btn {
-            background: linear-gradient(95deg, #1e293b, #0f172a);
-            border: 1px solid #2dd4bf;
-            color: #ccfbf1;
-            padding: 0.6rem 1rem;
+        .delete-employee {
+            background: #7f1a1a;
+            padding: 0.2rem 0.6rem;
             border-radius: 2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
+            font-size: 0.8rem;
         }
-
-        .btn-primary {
-            background: linear-gradient(95deg, #0f2b3d, #0a1a2b);
-            border-color: #38bdf8;
-            color: #bae6fd;
+        .btn-sm {
+            width: auto;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
         }
-
-        .btn-primary:hover {
-            background: #0284c7;
-            color: white;
-            border-color: #7dd3fc;
-            box-shadow: 0 0 12px #0ff;
-        }
-
-        .calc-btn {
-            margin-top: 1rem;
-            background: linear-gradient(95deg, #2d3a4b, #111827);
-            border-color: #f97316;
-            color: #fed7aa;
-        }
-
-        .calc-btn:hover {
-            background: #ea580c;
-            border-color: #f97316;
-            box-shadow: 0 0 14px #f97316;
-        }
-
-        .total-bonus {
-            background: #02061780;
-            padding: 0.8rem;
-            border-radius: 1rem;
-            text-align: center;
-            margin-top: 1rem;
-            font-weight: bold;
-            border-left: 4px solid #facc15;
-            font-size: 1.1rem;
-        }
-
-        /* Футер с ошибкой */
-        .error-section {
-            max-width: 600px;
-            margin: 2rem auto 0;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            border: 1px solid #f472b6;
-        }
-        .error-section h3 {
-            color: #f9a8d4;
+        .back-btn {
+            background: #334155;
             margin-bottom: 1rem;
         }
-        textarea {
-            width: 100%;
-            padding: 0.8rem;
-            background: #0f172a;
-            border: 1px solid #c084fc;
-            border-radius: 1rem;
-            color: white;
-        }
-        .btn-error {
-            background: #4c0519;
-            border-color: #f43f5e;
-            color: #fecdd3;
-            margin-top: 0.7rem;
-        }
-
-        @media (max-width: 760px) {
-            .departments-grid {
-                grid-template-columns: 1fr;
-            }
-            .scores-group {
-                flex-direction: column;
-            }
+        hr {
+            border-color: #1e293b;
+            margin: 1rem 0;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>⚡ NEON BONUS ⚡</h1>
-        <p>Система учёта активности отделов и расчёта премии</p>
-    </div>
 
-    <div class="departments-grid" id="departmentsGrid"></div>
-
-    <!-- БЛОК ОБРАТНОЙ СВЯЗИ -->
-    <div class="error-section">
-        <h3>📢 Сообщить об ошибке / идея</h3>
-        <textarea id="feedbackText" rows="2" placeholder="Опишите проблему или предложение..."></textarea>
-        <button id="sendFeedbackBtn" class="btn btn-error">📨 Отправить в Discord</button>
-    </div>
-</div>
+<div id="app" class="container"></div>
 
 <script>
-    // ---------- 🔧 НАСТРОЙКА DISCORD (твой вебхук) ----------
-    const DISCORD_FEEDBACK_WEBHOOK = "https://discord.com/api/webhooks/1500489792159354900/temeK7DdbRTfd88JBRD_2vLM8QpDRpUMl4CBsyyfrVbw3fJ64znRfr52nZ4iZNEN-7Ks";
-
-    // ------------------------------------------------------------
-    // 1. СТРУКТУРА ДАННЫХ (localStorage)
-    // ------------------------------------------------------------
-    const defaultData = {
-        "Кадры": { employees: [], totalBonusRub: 0 },
-        "Мероприятия": { employees: [], totalBonusRub: 0 },
-        "Эфиры": { employees: [], totalBonusRub: 0 },
-        "Журналистика": { employees: [], totalBonusRub: 0 }
+    // --------------------------------------------------------------
+    // 1. КОНФИГУРАЦИЯ ОТДЕЛОВ (пароли и стандартные веса)
+    // --------------------------------------------------------------
+    const DEPARTMENTS = {
+        "hr": {
+            name: "Кадры",
+            password: "hr2025",
+            settings: {
+                "Принятие человека": 3,
+                "Проведение собеседования": 3,
+                "Принятие экзамена": 2,
+                "Принятие отработки выговора": 2,
+                "Присутствие на чужом собеседовании": 1,
+                "Проверка отчета на повышение": 1,
+                "ТОП-Актив по звездам в конце недели": 10,
+                "Выполнение 'Халтурки' 7 дней подряд": 10,
+                "Проведение агитации 30 минут": 5
+            }
+        },
+        "events": {
+            name: "Мероприятия",
+            password: "event2025",
+            settings: {
+                "Помощь в МП": 1,
+                "Проведение МП": 2,
+                "Помощь в ГМП": 3,
+                "Проведение ГМП": 4,
+                "Найденный спонсор": 2
+            }
+        },
+        "broadcast": {
+            name: "Эфиры",
+            password: "air2025",
+            settings: {
+                "Выполнение 'Халтурки' 7 дней": 15,
+                "Проведение Интервью": 5,
+                "Рубрики: Погода, Гороскоп": 1,
+                "Рубрики: Факты, Книга рекордов": 2,
+                "Рубрики: Викторина, Слово из букв": 3,
+                "Рубрики: Угадайка, Сейф, Найди лишнее": 4
+            }
+        },
+        "journalism": {
+            name: "Журналистика",
+            password: "news2025",
+            settings: {
+                "Журнал": 4,
+                "Интервью с ВАЖНЫМ человеком": 3,
+                "Репортаж с МП/ГМП": 2,
+                "Новостной репортаж": 1,
+                "Статья": 1,
+                "Халтурка": 15
+            }
+        }
     };
 
-    // Загрузка / сохранение
-    function loadData() {
-        const saved = localStorage.getItem("neonBonusData");
-        if (saved) {
+    // Стандартная структура данных для отдела
+    function getEmptyDeptData() {
+        return {
+            settings: {},
+            employees: [],      // { name, points }
+            totalBonusRub: 0
+        };
+    }
+
+    // Загрузка/сохранение (localStorage)
+    function loadAllData() {
+        const raw = localStorage.getItem("bonus_depts_data");
+        if (raw) {
             try {
-                const parsed = JSON.parse(saved);
-                // миграция: если нет поля employees — подставить []
-                for (let key of Object.keys(defaultData)) {
-                    if (!parsed[key]) parsed[key] = { employees: [], totalBonusRub: 0 };
-                    if (!parsed[key].employees) parsed[key].employees = [];
-                    if (parsed[key].totalBonusRub === undefined) parsed[key].totalBonusRub = 0;
-                }
-                return parsed;
+                return JSON.parse(raw);
             } catch(e) { console.warn(e); }
         }
-        return JSON.parse(JSON.stringify(defaultData));
-    }
-
-    function saveData(data) {
-        localStorage.setItem("neonBonusData", JSON.stringify(data));
-    }
-
-    // ------------------------------------------------------------
-    // 2. КОНФИГУРАЦИЯ ОТДЕЛОВ (название и поля)
-    // ------------------------------------------------------------
-    const departmentsConfig = {
-        "Кадры": {
-            fields: [
-                { id: "points1", label: "Принятие человека", basePoints: 3 },
-                { id: "points2", label: "Проведение собеседования", basePoints: 3 },
-                { id: "points3", label: "Принятие экзамена", basePoints: 2 },
-                { id: "points4", label: "Принятие отработки выговора", basePoints: 2 },
-                { id: "points5", label: "Присутствие на чужом собеседовании", basePoints: 1 },
-                { id: "points6", label: "Проверка отчета на повышение", basePoints: 1 },
-                { id: "points7", label: "ТОП-Актив по звездам в конце недели", basePoints: 10 },
-                { id: "points8", label: "Выполнение 'Халтурки' 7 дней подряд", basePoints: 10 },
-                { id: "points9", label: "Проведение агитации 30 минут", basePoints: 5 }
-            ]
-        },
-        "Мероприятия": {
-            fields: [
-                { id: "points1", label: "Помощь в МП", basePoints: 1 },
-                { id: "points2", label: "Проведение МП", basePoints: 2 },
-                { id: "points3", label: "Помощь в ГМП", basePoints: 3 },
-                { id: "points4", label: "Проведение ГМП", basePoints: 4 },
-                { id: "points5", label: "Найденный спонсор", basePoints: 2 }
-            ]
-        },
-        "Эфиры": {
-            fields: [
-                { id: "points1", label: "Выполнение 'Халтурки' 7 дней", basePoints: 15 },
-                { id: "points2", label: "Проведение Интервью", basePoints: 5 },
-                { id: "points3", label: "Рубрики: Погода, Гороскоп", basePoints: 1 },
-                { id: "points4", label: "Рубрики: Факты, Книга рекордов", basePoints: 2 },
-                { id: "points5", label: "Рубрики: Викторина, Слово из букв", basePoints: 3 },
-                { id: "points6", label: "Рубрики: Угадайка, Сейф, Найди лишнее", basePoints: 4 }
-            ]
-        },
-        "Журналистика": {
-            fields: [
-                { id: "points1", label: "Журнал", basePoints: 4 },
-                { id: "points2", label: "Интервью с ВАЖНЫМ человеком", basePoints: 3 },
-                { id: "points3", label: "Репортаж с МП/ГМП", basePoints: 2 },
-                { id: "points4", label: "Новостной репортаж", basePoints: 1 },
-                { id: "points5", label: "Статья", basePoints: 1 },
-                { id: "points6", label: "Халтурка", basePoints: 15 }
-            ]
+        // инициализация дефолтными настройками
+        let init = {};
+        for (let [id, dept] of Object.entries(DEPARTMENTS)) {
+            let data = getEmptyDeptData();
+            data.settings = { ...dept.settings };
+            init[id] = data;
         }
-    };
+        return init;
+    }
 
-    // ------------------------------------------------------------
-    // 3. HELPER: рендер одного отдела
-    // ------------------------------------------------------------
-    function renderDepartment(departmentName, data, container) {
-        const deptData = data[departmentName];
-        const config = departmentsConfig[departmentName];
-        if (!config) return;
+    function saveAllData(data) {
+        localStorage.setItem("bonus_depts_data", JSON.stringify(data));
+    }
 
-        const card = document.createElement("div");
-        card.className = "card";
+    // --------------------------------------------------------------
+    // 2. ГЛАВНЫЙ ЭКРАН (выбор отдела)
+    // --------------------------------------------------------------
+    function renderMainScreen() {
+        const app = document.getElementById("app");
+        app.innerHTML = `
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <h1>📊 Система премий отделов</h1>
+                <p style="color: #94a3b8;">Выберите отдел для входа</p>
+            </div>
+            <div class="dept-grid" id="deptGrid"></div>
+        `;
+        const grid = document.getElementById("deptGrid");
+        for (let [id, info] of Object.entries(DEPARTMENTS)) {
+            const card = document.createElement("div");
+            card.className = "dept-card";
+            card.innerText = info.name;
+            card.onclick = () => showPasswordModal(id);
+            grid.appendChild(card);
+        }
+    }
 
-        // Заголовок
-        card.innerHTML = `<h2>📌 ${departmentName}</h2>`;
+    // Модалка ввода пароля
+    function showPasswordModal(deptId) {
+        const modalDiv = document.createElement("div");
+        modalDiv.className = "modal";
+        modalDiv.innerHTML = `
+            <div class="modal-card">
+                <h3>🔐 Вход в отдел «${DEPARTMENTS[deptId].name}»</h3>
+                <input type="password" id="deptPassword" placeholder="Пароль отдела" autocomplete="off">
+                <button id="submitPasswordBtn">Войти</button>
+                <button id="closeModalBtn" style="background:#334155;">Отмена</button>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        const passwordInput = modalDiv.querySelector("#deptPassword");
+        const submitBtn = modalDiv.querySelector("#submitPasswordBtn");
+        const closeBtn = modalDiv.querySelector("#closeModalBtn");
 
-        // Таблица сотрудников
+        const tryLogin = () => {
+            if (passwordInput.value === DEPARTMENTS[deptId].password) {
+                modalDiv.remove();
+                openDepartmentDashboard(deptId);
+            } else {
+                alert("Неверный пароль!");
+                passwordInput.value = "";
+            }
+        };
+        submitBtn.onclick = tryLogin;
+        closeBtn.onclick = () => modalDiv.remove();
+        passwordInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") tryLogin();
+        });
+        passwordInput.focus();
+    }
+
+    // --------------------------------------------------------------
+    // 3. ПАНЕЛЬ УПРАВЛЕНИЯ ОТДЕЛОМ (настройки, сотрудники, бонус)
+    // --------------------------------------------------------------
+    function openDepartmentDashboard(deptId) {
+        let allData = loadAllData();
+        if (!allData[deptId]) allData[deptId] = getEmptyDeptData();
+        // синхронизируем настройки: если добавились новые поля в эталон, но их нет в сохранённых
+        const defaultSettings = DEPARTMENTS[deptId].settings;
+        if (!allData[deptId].settings) allData[deptId].settings = {};
+        for (let [key, val] of Object.entries(defaultSettings)) {
+            if (allData[deptId].settings[key] === undefined) {
+                allData[deptId].settings[key] = val;
+            }
+        }
+        saveAllData(allData);
+        renderDashboard(deptId);
+    }
+
+    function renderDashboard(deptId) {
+        const app = document.getElementById("app");
+        let allData = loadAllData();
+        const deptData = allData[deptId];
+        const deptInfo = DEPARTMENTS[deptId];
+        const settings = deptData.settings;
+        const employees = deptData.employees || [];
+        const totalBonusRub = deptData.totalBonusRub || 0;
+
+        // Формируем список сотрудников + HTML формы добавления
         let employeesHtml = `<table class="employees-table">
-            <thead><tr><th>Имя</th><th>Баллы</th><th></th></tr></thead><tbody>`;
-        deptData.employees.forEach((emp, idx) => {
-            employeesHtml += `
-                <tr>
-                    <td>${escapeHtml(emp.name)}</td>
-                    <td><strong>${emp.totalPoints}</strong></td>
-                    <td><button class="delete-btn" data-dept="${departmentName}" data-empidx="${idx}">✖</button></td>
-                </tr>
-            `;
+            <thead><tr><th>Сотрудник</th><th>Сумма баллов</th><th></th></tr></thead><tbody>`;
+        employees.forEach((emp, idx) => {
+            employeesHtml += `<tr>
+                <td>${escapeHtml(emp.name)}</td>
+                <td><strong>${emp.points}</strong></td>
+                <td><button class="delete-employee" data-empidx="${idx}">✖</button></td>
+            </tr>`;
         });
         employeesHtml += `</tbody></table>`;
 
-        // Форма добавления
-        let formHtml = `<div class="form-group"><input type="text" id="name_${departmentName}" placeholder="Имя и Фамилия" autocomplete="off"></div>`;
-        let scoresHtml = `<div class="scores-group">`;
-        config.fields.forEach(field => {
-            scoresHtml += `<div class="score-field">
-                <label>${field.label} (${field.basePoints} балл)</label>
-                <input type="number" min="0" step="0" value="0" id="${field.id}_${departmentName}" placeholder="0">
+        // Форма добавления сотрудника (с баллами по каждому действию)
+        let addFormHtml = `<div style="background:#0a0f1f; padding:1rem; border-radius:1rem; margin:1rem 0;">
+            <h4>➕ Добавить сотрудника</h4>
+            <input type="text" id="newEmployeeName" placeholder="Имя и фамилия" style="margin-bottom: 0.5rem;">
+            <div id="pointsFields"></div>
+            <button id="addEmployeeBtn" style="margin-top: 0.5rem;">Добавить сотрудника</button>
+        </div>`;
+
+        // Редактор весов (настройки)
+        let settingsHtml = `<div class="settings-panel">
+            <h4>⚙️ Настройка весов (баллы за действие)</h4>`;
+        for (let [action, weight] of Object.entries(settings)) {
+            settingsHtml += `<div class="setting-row">
+                <span>${escapeHtml(action)}</span>
+                <input type="number" value="${weight}" class="weight-input" data-action="${escapeHtml(action)}" style="width: 80px;">
+                <button class="update-weight-btn" data-action="${escapeHtml(action)}" style="width: auto; padding: 0.2rem 1rem;">Сохранить</button>
             </div>`;
-        });
-        scoresHtml += `</div>`;
+        }
+        settingsHtml += `</div>`;
 
         // Блок премии
-        const totalBonusHtml = `<div class="total-bonus">💰 Премия отдела: <strong><span id="totalRub_${departmentName}">${deptData.totalBonusRub}</span> ₽</strong></div>`;
+        let bonusHtml = `<div style="background:#0a0f1f; border-radius:1rem; padding:1rem; margin: 1rem 0;">
+            <label>💰 Общая сумма премии для отдела (₽):</label>
+            <input type="number" id="totalBonusRub" value="${totalBonusRub}" style="width: 200px; display: inline-block; margin-left: 1rem;">
+            <button id="recalcBonusBtn" class="btn-sm">Пересчитать и распределить</button>
+            <div id="bonusResult" style="margin-top: 0.8rem; font-size:0.9rem;"></div>
+        </div>`;
 
-        card.innerHTML += employeesHtml + formHtml + scoresHtml +
-            `<button class="btn btn-primary add-employee-btn" data-dept="${departmentName}">➕ Добавить сотрудника</button>` +
-            totalBonusHtml +
-            `<div class="form-group" style="margin-top: 0.8rem;"><input type="number" id="bonusInput_${departmentName}" placeholder="Общая сумма премии для отдела (₽)" value="${deptData.totalBonusRub}"></div>
-            <button class="btn calc-btn" data-calcbonus="${departmentName}">💰 Рассчитать премии</button>`;
+        const dashboardHtml = `
+            <button id="backToMainBtn" class="back-btn">← К списку отделов</button>
+            <div class="dashboard">
+                <h2>📁 ${deptInfo.name}</h2>
+                ${settingsHtml}
+                ${employeesHtml}
+                ${addFormHtml}
+                ${bonusHtml}
+                <hr>
+                <div style="display: flex; gap: 1rem; justify-content: space-between;">
+                    <button id="exportBackupBtn" style="background:#2d3a5e;">💾 Экспорт бэкап (JSON)</button>
+                    <label style="background:#2d3a5e; padding: 0.7rem; border-radius: 2rem; cursor: pointer;">
+                        📂 Импорт бэкапа
+                        <input type="file" id="importBackupInput" accept=".json" style="display: none;">
+                    </label>
+                </div>
+            </div>
+        `;
 
-        container.appendChild(card);
-    }
+        app.innerHTML = dashboardHtml;
 
-    // ------------------------------------------------------------
-    // 4. ЛОГИКА БАЛЛОВ И ВЫПЛАТ
-    // ------------------------------------------------------------
-    function getEmployeePoints(config, departmentName, formPrefix = "") {
-        let total = 0;
-        for (let field of config.fields) {
-            const input = document.getElementById(`${field.id}_${departmentName}`);
-            if (input && input.value) {
-                total += parseInt(input.value) * field.basePoints;
+        // --- Отображение полей для баллов (динамически) ---
+        function renderPointsFields() {
+            const container = document.getElementById("pointsFields");
+            if (!container) return;
+            let fields = "";
+            for (let [action, weight] of Object.entries(settings)) {
+                fields += `<div style="margin-bottom: 5px;">
+                    <label style="font-size:0.8rem;">${escapeHtml(action)} (${weight} балл):</label>
+                    <input type="number" min="0" value="0" class="point-input" data-action="${escapeHtml(action)}" style="width: 80px; margin-left: 10px;">
+                </div>`;
             }
-        }
-        return total;
-    }
-
-    function addEmployeeToDept(departmentName, data, name, points) {
-        if (!name || points <= 0) return false;
-        const dept = data[departmentName];
-        dept.employees.push({ name: name.trim(), totalPoints: points });
-        saveData(data);
-        return true;
-    }
-
-    function removeEmployee(departmentName, empIdx, data) {
-        data[departmentName].employees.splice(empIdx, 1);
-        saveData(data);
-    }
-
-    function recalcAndShowBonuses(departmentName, data) {
-        const dept = data[departmentName];
-        const bonusRubInput = document.getElementById(`bonusInput_${departmentName}`);
-        let totalFund = parseInt(bonusRubInput?.value) || 0;
-        if (totalFund < 0) totalFund = 0;
-        dept.totalBonusRub = totalFund;
-        saveData(data);
-
-        // пересчитываем выплаты (распределение пропорционально баллам)
-        const employees = dept.employees;
-        const totalPoints = employees.reduce((sum, e) => sum + e.totalPoints, 0);
-        let resultMsg = `🎯 Распределение премии отдела "${departmentName}" (${totalFund} ₽):\n`;
-        if (totalPoints === 0 || employees.length === 0) {
-            resultMsg += "❌ Нет сотрудников с баллами, премия не распределена.";
-            alert(resultMsg);
-            return;
-        }
-        for (let emp of employees) {
-            const share = totalPoints > 0 ? emp.totalPoints / totalPoints : 0;
-            const payout = Math.floor(share * totalFund);
-            resultMsg += `👤 ${emp.name} (баллы: ${emp.totalPoints}) — ${payout} ₽\n`;
-        }
-        alert(resultMsg);
-        // обновляем отображение суммы в карточке
-        const totalSpan = document.getElementById(`totalRub_${departmentName}`);
-        if (totalSpan) totalSpan.innerText = totalFund;
-    }
-
-    // ------------------------------------------------------------
-    // 5. ОТПРАВКА FEEDBACK В DISCORD
-    // ------------------------------------------------------------
-    async function sendFeedbackToDiscord(text) {
-        if (!text.trim()) return alert("Введите текст перед отправкой!");
-        try {
-            await fetch(DISCORD_FEEDBACK_WEBHOOK, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    content: `📝 **Фидбек / Ошибка**\n📌 ${text}\n🕒 ${new Date().toLocaleString()}`,
-                    username: "NeonBonusBot"
-                })
-            });
-            alert("✅ Сообщение отправлено в Discord!");
-        } catch(e) {
-            alert("❌ Ошибка при отправке.");
-            console.error(e);
-        }
-    }
-
-    // ------------------------------------------------------------
-    // 6. ГЛАВНАЯ ИНИЦИАЛИЗАЦИЯ
-    // ------------------------------------------------------------
-    function init() {
-        let data = loadData();
-        const grid = document.getElementById("departmentsGrid");
-        grid.innerHTML = "";
-
-        for (let deptName of Object.keys(departmentsConfig)) {
-            renderDepartment(deptName, data, grid);
+            container.innerHTML = fields;
         }
 
-        // Вешаем события ПОСЛЕ отрисовки
-        // Добавление сотрудников
-        document.querySelectorAll(".add-employee-btn").forEach(btn => {
+        // Обновляем поля после любого изменения настроек
+        renderPointsFields();
+
+        // --- Обработчики ---
+        document.getElementById("backToMainBtn").onclick = () => renderMainScreen();
+
+        // Изменение веса (настройки)
+        document.querySelectorAll(".update-weight-btn").forEach(btn => {
             btn.addEventListener("click", (e) => {
-                const deptName = btn.getAttribute("data-dept");
-                const nameInput = document.getElementById(`name_${deptName}`);
-                const name = nameInput?.value.trim();
-                const config = departmentsConfig[deptName];
-                if (!config) return;
-                const points = getEmployeePoints(config, deptName);
-                if (!name) { alert("Введите имя сотрудника!"); return; }
-                if (points <= 0) { alert("Добавьте хотя бы один балл (больше нуля)!"); return; }
-                let newData = loadData();
-                if (addEmployeeToDept(deptName, newData, name, points)) {
-                    // Очищаем поля ввода баллов
-                    for (let field of config.fields) {
-                        const inp = document.getElementById(`${field.id}_${deptName}`);
-                        if (inp) inp.value = "0";
-                    }
-                    if(nameInput) nameInput.value = "";
-                    // Перезагружаем интерфейс
-                    init();
-                } else {
-                    alert("Не удалось добавить сотрудника");
+                const action = btn.getAttribute("data-action");
+                const input = document.querySelector(`.weight-input[data-action="${action}"]`);
+                if (input) {
+                    let newVal = parseInt(input.value);
+                    if (isNaN(newVal)) newVal = 0;
+                    settings[action] = newVal;
+                    let freshData = loadAllData();
+                    freshData[deptId].settings = settings;
+                    saveAllData(freshData);
+                    renderDashboard(deptId); // перерисовка с новыми весами
                 }
             });
         });
 
-        // Удаление сотрудников
-        document.querySelectorAll(".delete-btn").forEach(btn => {
+        // Добавление сотрудника
+        document.getElementById("addEmployeeBtn")?.addEventListener("click", () => {
+            const nameInput = document.getElementById("newEmployeeName");
+            const name = nameInput.value.trim();
+            if (!name) { alert("Введите имя!"); return; }
+            let totalPoints = 0;
+            const pointsInputs = document.querySelectorAll(".point-input");
+            for (let inp of pointsInputs) {
+                const action = inp.getAttribute("data-action");
+                const weight = settings[action] || 0;
+                const count = parseInt(inp.value) || 0;
+                totalPoints += count * weight;
+            }
+            if (totalPoints === 0) { alert("Добавьте хотя бы одно действие с баллами >0"); return; }
+            let freshData = loadAllData();
+            if (!freshData[deptId].employees) freshData[deptId].employees = [];
+            freshData[deptId].employees.push({ name: name, points: totalPoints });
+            saveAllData(freshData);
+            renderDashboard(deptId);
+        });
+
+        // Удаление сотрудника
+        document.querySelectorAll(".delete-employee").forEach(btn => {
             btn.addEventListener("click", (e) => {
-                const deptName = btn.getAttribute("data-dept");
-                const empIdx = parseInt(btn.getAttribute("data-empidx"));
-                let newData = loadData();
-                removeEmployee(deptName, empIdx, newData);
-                init();
+                const idx = btn.getAttribute("data-empidx");
+                if (confirm("Удалить сотрудника?")) {
+                    let freshData = loadAllData();
+                    freshData[deptId].employees.splice(idx, 1);
+                    saveAllData(freshData);
+                    renderDashboard(deptId);
+                }
             });
         });
 
-        // Пересчёт премии
-        document.querySelectorAll(".calc-btn").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                const deptName = btn.getAttribute("data-calcbonus");
-                let freshData = loadData();
-                recalcAndShowBonuses(deptName, freshData);
-                init(); // обновляем отображение суммы
-            });
+        // Расчёт премии
+        document.getElementById("recalcBonusBtn")?.addEventListener("click", () => {
+            let freshData = loadAllData();
+            const fundInput = document.getElementById("totalBonusRub");
+            let fund = parseInt(fundInput.value) || 0;
+            freshData[deptId].totalBonusRub = fund;
+            saveAllData(freshData);
+            const employeesList = freshData[deptId].employees;
+            const totalPoints = employeesList.reduce((sum, e) => sum + e.points, 0);
+            let resultText = `💰 Распределение ${fund} ₽:\n`;
+            if (totalPoints === 0 || employeesList.length === 0) {
+                resultText = "Нет сотрудников с баллами.";
+            } else {
+                for (let emp of employeesList) {
+                    let share = emp.points / totalPoints;
+                    let payout = Math.floor(share * fund);
+                    resultText += `👤 ${emp.name} (баллы: ${emp.points}) → ${payout} ₽\n`;
+                }
+            }
+            document.getElementById("bonusResult").innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(resultText)}</pre>`;
         });
+
+        // Экспорт / Импорт (бэкап всех данных)
+        document.getElementById("exportBackupBtn")?.addEventListener("click", () => {
+            const fullBackup = loadAllData();
+            const dataStr = JSON.stringify(fullBackup, null, 2);
+            const blob = new Blob([dataStr], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `bonus_backup_${deptId}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        const fileInput = document.getElementById("importBackupInput");
+        if (fileInput) {
+            fileInput.addEventListener("change", (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const imported = JSON.parse(ev.target.result);
+                        // простая проверка: должен содержать ключи отделов
+                        if (imported && typeof imported === "object") {
+                            saveAllData(imported);
+                            renderDashboard(deptId);
+                            alert("Бэкап успешно восстановлен!");
+                        } else throw new Error();
+                    } catch(err) {
+                        alert("Ошибка: неверный формат файла");
+                    }
+                };
+                reader.readAsText(file);
+                fileInput.value = "";
+            });
+        }
     }
 
     function escapeHtml(str) {
@@ -547,14 +528,8 @@
         });
     }
 
-    // Отправка ошибки
-    document.getElementById("sendFeedbackBtn")?.addEventListener("click", () => {
-        const msg = document.getElementById("feedbackText")?.value;
-        sendFeedbackToDiscord(msg);
-        if(document.getElementById("feedbackText")) document.getElementById("feedbackText").value = "";
-    });
-
-    init();
+    // Старт
+    renderMainScreen();
 </script>
 </body>
 </html>
