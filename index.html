@@ -135,6 +135,7 @@
             padding: 0.2rem 0.6rem;
             border-radius: 2rem;
             font-size: 0.8rem;
+            width: auto;
         }
         .btn-sm {
             width: auto;
@@ -148,6 +149,22 @@
         hr {
             border-color: #1e293b;
             margin: 1rem 0;
+        }
+        .add-action-btn, .delete-action-btn {
+            width: auto;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            margin-left: 1rem;
+        }
+        .delete-action-btn {
+            background: #7f1a1a;
+        }
+        .action-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
@@ -301,6 +318,7 @@
 
     // --------------------------------------------------------------
     // 3. ПАНЕЛЬ УПРАВЛЕНИЯ ОТДЕЛОМ (настройки, сотрудники, бонус)
+    //    + возможность добавлять/удалять действия
     // --------------------------------------------------------------
     function openDepartmentDashboard(deptId) {
         let allData = loadAllData();
@@ -326,9 +344,9 @@
         const employees = deptData.employees || [];
         const totalBonusRub = deptData.totalBonusRub || 0;
 
-        // Формируем список сотрудников + HTML формы добавления
+        // Формируем список сотрудников
         let employeesHtml = `<table class="employees-table">
-            <thead><tr><th>Сотрудник</th><th>Сумма баллов</th><th></th></tr></thead><tbody>`;
+            <thead><tr><th>Сотрудник</th><th>Сумма баллов</th><th></th></thead><tbody>`;
         employees.forEach((emp, idx) => {
             employeesHtml += `<tr>
                 <td>${escapeHtml(emp.name)}</td>
@@ -346,17 +364,16 @@
             <button id="addEmployeeBtn" style="margin-top: 0.5rem;">Добавить сотрудника</button>
         </div>`;
 
-        // Редактор весов (настройки)
+        // --- Редактор весов (настройки) с возможностью добавления/удаления действий ---
         let settingsHtml = `<div class="settings-panel">
-            <h4>⚙️ Настройка весов (баллы за действие)</h4>`;
-        for (let [action, weight] of Object.entries(settings)) {
-            settingsHtml += `<div class="setting-row">
-                <span>${escapeHtml(action)}</span>
-                <input type="number" value="${weight}" class="weight-input" data-action="${escapeHtml(action)}" style="width: 80px;">
-                <button class="update-weight-btn" data-action="${escapeHtml(action)}" style="width: auto; padding: 0.2rem 1rem;">Сохранить</button>
-            </div>`;
-        }
-        settingsHtml += `</div>`;
+            <h4>⚙️ Настройка весов (баллы за действие)</h4>
+            <div id="actionsList"></div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <input type="text" id="newActionName" placeholder="Новое действие" style="flex: 2;">
+                <input type="number" id="newActionWeight" placeholder="Баллы" style="width: 100px;">
+                <button id="addNewActionBtn" class="btn-sm">➕ Добавить действие</button>
+            </div>
+        </div>`;
 
         // Блок премии
         let bonusHtml = `<div style="background:#0a0f1f; border-radius:1rem; padding:1rem; margin: 1rem 0;">
@@ -387,7 +404,55 @@
 
         app.innerHTML = dashboardHtml;
 
-        // --- Отображение полей для баллов (динамически) ---
+        // --- Функция обновления списка действий и полей для баллов ---
+        function renderActionsList() {
+            const actionsContainer = document.getElementById("actionsList");
+            if (!actionsContainer) return;
+            let actionsHtml = "";
+            for (let [action, weight] of Object.entries(settings)) {
+                actionsHtml += `
+                    <div class="action-item">
+                        <span style="flex: 3;">${escapeHtml(action)}</span>
+                        <input type="number" value="${weight}" class="weight-input" data-action="${escapeHtml(action)}" style="width: 80px;">
+                        <button class="update-weight-btn" data-action="${escapeHtml(action)}" style="width: auto; padding: 0.2rem 1rem;">Сохранить</button>
+                        <button class="delete-action-btn" data-action="${escapeHtml(action)}" style="width: auto; padding: 0.2rem 1rem;">❌</button>
+                    </div>
+                `;
+            }
+            actionsContainer.innerHTML = actionsHtml;
+
+            // обработчики изменения веса
+            document.querySelectorAll(".update-weight-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const action = btn.getAttribute("data-action");
+                    const input = document.querySelector(`.weight-input[data-action="${action}"]`);
+                    if (input) {
+                        let newVal = parseInt(input.value);
+                        if (isNaN(newVal)) newVal = 0;
+                        settings[action] = newVal;
+                        let freshData = loadAllData();
+                        freshData[deptId].settings = settings;
+                        saveAllData(freshData);
+                        renderDashboard(deptId);
+                    }
+                });
+            });
+
+            // обработчики удаления действия
+            document.querySelectorAll(".delete-action-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    const action = btn.getAttribute("data-action");
+                    if (confirm(`Удалить действие "${action}"? Это может повлиять на уже начисленные баллы сотрудников.`)) {
+                        delete settings[action];
+                        let freshData = loadAllData();
+                        freshData[deptId].settings = settings;
+                        saveAllData(freshData);
+                        renderDashboard(deptId);
+                    }
+                });
+            });
+        }
+
         function renderPointsFields() {
             const container = document.getElementById("pointsFields");
             if (!container) return;
@@ -401,27 +466,21 @@
             container.innerHTML = fields;
         }
 
-        // Обновляем поля после любого изменения настроек
+        renderActionsList();
         renderPointsFields();
 
-        // --- Обработчики ---
-        document.getElementById("backToMainBtn").onclick = () => renderMainScreen();
-
-        // Изменение веса (настройки)
-        document.querySelectorAll(".update-weight-btn").forEach(btn => {
-            btn.addEventListener("click", (e) => {
-                const action = btn.getAttribute("data-action");
-                const input = document.querySelector(`.weight-input[data-action="${action}"]`);
-                if (input) {
-                    let newVal = parseInt(input.value);
-                    if (isNaN(newVal)) newVal = 0;
-                    settings[action] = newVal;
-                    let freshData = loadAllData();
-                    freshData[deptId].settings = settings;
-                    saveAllData(freshData);
-                    renderDashboard(deptId); // перерисовка с новыми весами
-                }
-            });
+        // Добавление нового действия
+        document.getElementById("addNewActionBtn")?.addEventListener("click", () => {
+            const newAction = document.getElementById("newActionName")?.value.trim();
+            const newWeight = parseInt(document.getElementById("newActionWeight")?.value);
+            if (!newAction) { alert("Введите название действия"); return; }
+            if (isNaN(newWeight) || newWeight <= 0) { alert("Введите корректное количество баллов (>0)"); return; }
+            if (settings[newAction]) { alert("Такое действие уже существует!"); return; }
+            settings[newAction] = newWeight;
+            let freshData = loadAllData();
+            freshData[deptId].settings = settings;
+            saveAllData(freshData);
+            renderDashboard(deptId);
         });
 
         // Добавление сотрудника
@@ -480,7 +539,7 @@
             document.getElementById("bonusResult").innerHTML = `<pre style="white-space: pre-wrap;">${escapeHtml(resultText)}</pre>`;
         });
 
-        // Экспорт / Импорт (бэкап всех данных)
+        // Экспорт / Импорт бэкапа
         document.getElementById("exportBackupBtn")?.addEventListener("click", () => {
             const fullBackup = loadAllData();
             const dataStr = JSON.stringify(fullBackup, null, 2);
@@ -502,7 +561,6 @@
                 reader.onload = (ev) => {
                     try {
                         const imported = JSON.parse(ev.target.result);
-                        // простая проверка: должен содержать ключи отделов
                         if (imported && typeof imported === "object") {
                             saveAllData(imported);
                             renderDashboard(deptId);
@@ -516,6 +574,8 @@
                 fileInput.value = "";
             });
         }
+
+        document.getElementById("backToMainBtn").onclick = () => renderMainScreen();
     }
 
     function escapeHtml(str) {
@@ -528,7 +588,6 @@
         });
     }
 
-    // Старт
     renderMainScreen();
 </script>
 </body>
